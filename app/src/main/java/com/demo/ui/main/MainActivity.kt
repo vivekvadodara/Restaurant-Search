@@ -18,6 +18,7 @@ import com.demo.ui.main.adapter.RestaurantListAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import com.demo.R
 import com.demo.databinding.ActivityMainBinding
+import com.demo.utils.showToast
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -62,6 +63,7 @@ class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>() {
                         showLoading(false)
                     }
                     else -> {
+                        showToast("No search result found")
                         showLoading(false)
                     }
                 }
@@ -181,7 +183,13 @@ class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>() {
             "SEARCH"
         ) { dialog, which ->
             val editText: EditText = customLayout.findViewById(R.id.searchEditText)
-            search(editText.text.toString())
+            val text = editText.text.toString()
+            if (text.isEmpty()  || text.isBlank() || text.length < 3) {
+                showToast("search with at least 3 characters")
+            } else {
+                search(text)
+            }
+
         }
         val alert = alertDialog.create()
         alert.setCanceledOnTouchOutside(true)
