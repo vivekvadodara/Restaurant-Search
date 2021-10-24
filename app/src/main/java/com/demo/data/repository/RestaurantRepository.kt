@@ -1,6 +1,5 @@
 package com.demo.data.repository
 
-import androidx.annotation.MainThread
 import com.demo.data.local.dao.MenusDao
 import com.demo.data.local.dao.RestaurantsDao
 import com.demo.model.Menu
@@ -36,7 +35,6 @@ class RestaurantRepositoryImpl @Inject constructor(
         }
     }
 
-    @MainThread
     override fun getMenuById(restId: Long): Flow<Menu> {
         return menuDao.getAll().map {
             it.filter {
@@ -47,7 +45,6 @@ class RestaurantRepositoryImpl @Inject constructor(
         }
     }
 
-    @MainThread
     override suspend fun getRestaurantConsolidatedResult(text: String): Flow<Map<String, List<Restaurant>>> {
 
         val restaurantList: List<RestaurantEntity> = restaurantsDao.getAll().take(1).single()

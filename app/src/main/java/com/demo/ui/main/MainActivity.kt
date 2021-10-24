@@ -45,6 +45,7 @@ class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>() {
     override fun onStart() {
         super.onStart()
         observeRestaurants()
+        observeMenuForRest()
     }
 
     private fun observeSearchedRestaurants() {
@@ -70,7 +71,7 @@ class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>() {
     }
 
     private fun observeMenuForRest() {
-        lifecycleScope.launch {
+        lifecycleScope.launchWhenStarted {
             mViewModel.menuForRest.collect { data ->
                 when {
                     data != null -> {
@@ -185,6 +186,5 @@ class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>() {
         )
 
         mViewModel.getMenus(restaurant.id)
-        observeMenuForRest()
     }
 }
