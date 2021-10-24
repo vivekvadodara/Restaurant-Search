@@ -46,6 +46,7 @@ class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>() {
         super.onStart()
         observeRestaurants()
         observeMenuForRest()
+        observeSearchedRestaurants()
     }
 
     private fun observeSearchedRestaurants() {
@@ -172,7 +173,6 @@ class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>() {
     private fun search(text: String) {
         mRestaurantAdapter.submitList(emptyList())
         mViewModel.getSearchResult(text)
-        observeSearchedRestaurants()
     }
 
     override fun getViewBinding(): ActivityMainBinding = ActivityMainBinding.inflate(layoutInflater)
