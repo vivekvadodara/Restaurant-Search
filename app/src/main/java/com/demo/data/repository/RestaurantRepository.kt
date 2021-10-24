@@ -47,7 +47,7 @@ class RestaurantRepositoryImpl @Inject constructor(
 
     override suspend fun getRestaurantConsolidatedResult(text: String): Flow<Map<String, List<Restaurant>>> {
 
-        return restaurantsDao.getAll().take(1).combine(menuDao.getAll().take(1)) { restaurantList, menuList ->
+        return restaurantsDao.getAll().combine(menuDao.getAll()) { restaurantList, menuList ->
             val result: MutableMap<String, MutableList<Restaurant>> = mutableMapOf()
             restaurantList.forEach {
                 if (it.item.name.contains(text, true)) {
