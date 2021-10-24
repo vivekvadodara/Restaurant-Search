@@ -11,14 +11,13 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityOptionsCompat
 import androidx.lifecycle.lifecycleScope
-import com.demo.model.Restaurant
-import com.demo.model.State
-import com.demo.ui.base.BaseActivity
-import com.demo.ui.main.adapter.RestaurantListAdapter
-import dagger.hilt.android.AndroidEntryPoint
 import com.demo.R
 import com.demo.databinding.ActivityMainBinding
+import com.demo.model.Restaurant
+import com.demo.ui.base.BaseActivity
+import com.demo.ui.main.adapter.RestaurantListAdapter
 import com.demo.utils.showToast
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -46,7 +45,6 @@ class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>() {
     override fun onStart() {
         super.onStart()
         observeRestaurants()
-        observeMenus()
     }
 
     private fun observeSearchedRestaurants() {
@@ -99,7 +97,6 @@ class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>() {
     private fun initView() {
         mViewBinding.run {
             recyclerView.adapter = mRestaurantAdapter
-            getMenus()
             getRestaurants()
 
             swipeRefreshLayout.setOnRefreshListener {
@@ -110,35 +107,12 @@ class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>() {
 
     private fun observeRestaurants() {
         lifecycleScope.launchWhenStarted {
-            mViewModel.restaurants.collect { state ->
-                when (state) {
-                    is State.Success -> {
-                        if (state.data.isNotEmpty()) {
-                            mRestaurantAdapter.submitList(state.data.toMutableList())
-                            showLoading(false)
-                        }
-                    }
-                    is State.Error -> {
-                        showLoading(false)
-                    }
-                }
-            }
-        }
-    }
-
-    private fun observeMenus() {
-        lifecycleScope.launchWhenStarted {
-            mViewModel.menus.collect { state ->
-                when (state) {
-                    is State.Success -> {
-                        if (state.data.isNotEmpty()) {
-//                            mAdapter.submitList(state.data.toMutableList())
-                            showLoading(false)
-                        }
-                    }
-                    is State.Error -> {
-                        showLoading(false)
-                    }
+            mViewModel.restaurants.collect { data ->
+                if (data.isNotEmpty()) {
+                    mRestaurantAdapter.submitList(data.toMutableList())
+                    showLoading(false)
+                } else {
+                    showLoading(false)
                 }
             }
         }
@@ -148,8 +122,6 @@ class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>() {
         mRestaurantAdapter.submitList(emptyList())
         mViewModel.getRestaurants()
     }
-
-    private fun getMenus() = mViewModel.getMenus()
 
     private fun showLoading(isLoading: Boolean) {
         mViewBinding.swipeRefreshLayout.isRefreshing = isLoading
@@ -184,7 +156,7 @@ class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>() {
         ) { dialog, which ->
             val editText: EditText = customLayout.findViewById(R.id.searchEditText)
             val text = editText.text.toString()
-            if (text.isEmpty()  || text.isBlank() || text.length < 3) {
+            if (text.isEmpty() || text.isBlank() || text.length < 3) {
                 showToast("search with at least 3 characters")
             } else {
                 search(text)

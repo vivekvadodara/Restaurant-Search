@@ -1,23 +1,19 @@
 package com.demo.data.repository
 
-import android.content.Context
 import androidx.annotation.MainThread
 import com.demo.data.local.dao.MenusDao
 import com.demo.data.local.dao.RestaurantsDao
-import com.demo.model.*
-import com.squareup.moshi.Moshi
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.*
+import com.demo.model.Menu
+import com.demo.model.MenuEntity
+import com.demo.model.Restaurant
+import com.demo.model.RestaurantEntity
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
-import retrofit2.Response
-import java.io.IOException
-import java.io.InputStream
 import javax.inject.Inject
 import kotlin.math.min
 
 interface RestaurantRepository {
-    fun getAllRestaurants(): Flow<Resource<List<Restaurant>>>
-    fun getAllMenus(): Flow<Resource<List<Menu>>>
+    fun getAllRestaurants(): Flow<List<Restaurant>>
     fun getMenuById(restId: Long): Flow<Menu>
     suspend fun getRestaurantConsolidatedResult(text: String): Flow<Map<String, List<Restaurant>>>
 }
@@ -28,58 +24,16 @@ interface RestaurantRepository {
  */
 @ExperimentalCoroutinesApi
 class RestaurantRepositoryImpl @Inject constructor(
-    @ApplicationContext private val context: Context,
     private val restaurantsDao: RestaurantsDao,
     private val menuDao: MenusDao
 ) : RestaurantRepository {
 
-    val moshi: Moshi = MoshiFactory.getInstance()
-
-    val lazyRestaurantList = GlobalScope.async(
-        Dispatchers.Unconfined,
-        start = CoroutineStart.LAZY
-    ) {
-        getRestaurantsFromAsset()
-    }
-
-
-    val lazyMenuList = GlobalScope.async(
-        Dispatchers.Unconfined,
-        start = CoroutineStart.LAZY
-    ) { getMenusFromAsset() }
-
-    override fun getAllRestaurants(): Flow<Resource<List<Restaurant>>> {
-        return object : NetworkBoundRepository<List<Restaurant>, List<Restaurant>>() {
-
-            override suspend fun saveRemoteData(response: List<Restaurant>) =
-                restaurantsDao.add(response.map { it.toEntity() })
-
-            override fun fetchFromLocal(): Flow<List<Restaurant>> =
-                restaurantsDao.getAll().map {
-                    it.map { entity ->
-                        entity.item
-                    }
-                }
-
-            override suspend fun fetchFromRemote(): Response<List<Restaurant>> =
-                lazyRestaurantList.await()
-        }.asFlow()
-    }
-
-    override fun getAllMenus(): Flow<Resource<List<Menu>>> {
-        return object : NetworkBoundRepository<List<Menu>, List<Menu>>() {
-
-            override suspend fun saveRemoteData(response: List<Menu>) =
-                menuDao.add(response.map { it.toEntity() })
-
-            override fun fetchFromLocal(): Flow<List<Menu>> = menuDao.getAll().map {
-                it.map { entity ->
-                    entity.toModel()
-                }
+    override fun getAllRestaurants(): Flow<List<Restaurant>> {
+        return restaurantsDao.getAll().map {
+            it.map { entity ->
+                entity.item
             }
-
-            override suspend fun fetchFromRemote(): Response<List<Menu>> = lazyMenuList.await()
-        }.asFlow()
+        }
     }
 
     @MainThread
@@ -89,24 +43,9 @@ class RestaurantRepositoryImpl @Inject constructor(
                 it.item.restaurantId == restId
             }[0]
         }.map {
-            it?.item ?: throw IllegalStateException("Menu not found")
+            it.item
         }
     }
-
-    private suspend fun getRestaurantsFromAsset(): Response<List<Restaurant>> {
-        return withContext(Dispatchers.IO) {
-            val response: List<Restaurant> = getRestaurants().items
-            Response.success(response)
-        }
-    }
-
-    private suspend fun getMenusFromAsset(): Response<List<Menu>> {
-        return withContext(Dispatchers.IO) {
-            val response: List<Menu> = getMenus().items
-            Response.success(response)
-        }
-    }
-
 
     @MainThread
     override suspend fun getRestaurantConsolidatedResult(text: String): Flow<Map<String, List<Restaurant>>> {
@@ -159,67 +98,4 @@ class RestaurantRepositoryImpl @Inject constructor(
             emit(result)
         }
     }
-
-
-    private suspend fun getRestaurants(): Restaurants {
-        return parse(getJSONData(RESTAURANTS_JSON))
-    }
-
-    private suspend fun getMenus(): Menus {
-        return parse(getJSONData(MENUS_JSON))
-    }
-
-    private suspend inline fun <reified T> parse(rawJson: String): T {
-        return withContext(Dispatchers.IO) {
-            val adapter = moshi.adapter(T::class.java)
-            adapter.fromJson(rawJson)
-                ?: throw IllegalStateException("failed parsing ${T::class.java.simpleName}")
-        }
-
-    }
-
-    private suspend fun getJSONData(fileName: String): String {
-        return withContext(Dispatchers.IO) {
-            val inputStream = getInputStreamForJsonFile(fileName)
-            inputStream.bufferedReader().use { it.readText() }
-        }
-
-    }
-
-    @Throws(IOException::class)
-    private fun getInputStreamForJsonFile(fileName: String): InputStream {
-        return context.assets.open(fileName)
-    }
-
-
-    companion object {
-        private const val RESTAURANTS_JSON = "restaurants.json"
-        private const val MENUS_JSON = "menus.json"
-    }
-}
-
-private fun Restaurant.toEntity(): RestaurantEntity {
-    return RestaurantEntity(
-        item = this
-    )
-}
-
-private fun RestaurantEntity.toModel(): Restaurant {
-    return this.item
-}
-
-private fun Menu.toEntity(): MenuEntity {
-    return MenuEntity(
-        item = this
-    )
-}
-
-private fun MenuEntity.toModel(): Menu {
-    return this.item
-}
-
-internal object MoshiFactory {
-
-    private val moshi: Moshi = Moshi.Builder().build()
-    fun getInstance() = moshi
 }

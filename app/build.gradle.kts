@@ -75,6 +75,7 @@ dependencies {
     // Room components
     implementation(Room.runtime)
     implementation(Room.ktx)
+    implementation("androidx.work:work-runtime-ktx:2.5.0")
     kapt(Room.compiler)
 
     // Material Design

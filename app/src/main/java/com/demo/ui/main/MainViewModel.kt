@@ -11,7 +11,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -24,8 +23,7 @@ class MainViewModel @Inject constructor(
     private val restaurantRepository: RestaurantRepository
 ) : ViewModel() {
 
-    private val _restaurants: MutableStateFlow<State<List<Restaurant>>> =
-        MutableStateFlow(State.loading())
+    private val _restaurants: MutableStateFlow<List<Restaurant>> = MutableStateFlow(emptyList())
     private val _menus: MutableStateFlow<State<List<Menu>>> = MutableStateFlow(State.loading())
     private val _searchedRestaurants: MutableStateFlow<Map<String, List<Restaurant>>> =
         MutableStateFlow(emptyMap())
@@ -33,8 +31,7 @@ class MainViewModel @Inject constructor(
     private val _menuForRest: MutableStateFlow<Menu?> = MutableStateFlow(null)
 
 
-    val restaurants: StateFlow<State<List<Restaurant>>> = _restaurants
-    val menus: StateFlow<State<List<Menu>>> = _menus
+    val restaurants: StateFlow<List<Restaurant>> = _restaurants
     val menuForRest: StateFlow<Menu?> = _menuForRest
     val searchedRestaurants: StateFlow<Map<String, List<Restaurant>>> = _searchedRestaurants
 
@@ -43,8 +40,9 @@ class MainViewModel @Inject constructor(
         _searchedRestaurants.value = emptyMap()
         viewModelScope.launch {
             restaurantRepository.getAllRestaurants()
-                .map { resource -> State.fromResource(resource) }
-                .collect { state -> _restaurants.value = state }
+                .collect {
+                    _restaurants.value = it
+                }
         }
     }
 
@@ -58,15 +56,6 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun getMenus() {
-        clear()
-        viewModelScope.launch {
-            restaurantRepository.getAllMenus()
-                .map { resource -> State.fromResource(resource) }
-                .collect { state -> _menus.value = state }
-        }
-    }
-
     fun getMenus(restId: Long) {
         clear()
         _menuForRest.value = null
@@ -77,7 +66,7 @@ class MainViewModel @Inject constructor(
     }
 
     private fun clear() {
-        _restaurants.value = State.loading()
+        _restaurants.value = emptyList()
         _menus.value = State.loading()
         _searchedRestaurants.value = emptyMap()
         _menuForRest.value = null
