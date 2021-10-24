@@ -3,6 +3,7 @@ package com.demo.ui.main.viewholder
 import android.annotation.SuppressLint
 import android.graphics.Color
 import androidx.recyclerview.widget.RecyclerView
+import com.demo.R
 import com.demo.databinding.ItemRestaurantBinding
 import com.demo.model.Restaurant
 
@@ -39,6 +40,10 @@ class RestaurantViewHolder(private val binding: ItemRestaurantBinding) :
             binding.restaurantAddress.textSize = 25.0f
         } else {
             binding.root.setBackgroundColor(Color.parseColor("#0DFFFFFF"))
+            binding.restaurantName.textSize = 16.0f
+            binding.restaurantCuisine.textSize = 12.0f
+            binding.menuHighlight.textSize = 12.0f
+            binding.restaurantAddress.textSize = 12.0f
         }
     }
 }

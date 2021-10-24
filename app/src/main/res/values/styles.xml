@@ -14,6 +14,7 @@
     <style name="PostAuthorText">
         <item name="android:layout_marginStart">@dimen/dimen_16</item>
         <item name="android:layout_marginTop">@dimen/dimen_8</item>
+        <item name="android:textSize">12sp</item>
     </style>
 
     <style name="PostImage">
