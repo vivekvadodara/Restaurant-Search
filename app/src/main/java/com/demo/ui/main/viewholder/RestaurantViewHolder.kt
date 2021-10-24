@@ -2,16 +2,15 @@ package com.demo.ui.main.viewholder
 
 import android.annotation.SuppressLint
 import android.graphics.Color
-import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
-import com.demo.model.Restaurant
 import com.demo.databinding.ItemRestaurantBinding
+import com.demo.model.Restaurant
 
 class RestaurantViewHolder(private val binding: ItemRestaurantBinding) :
     RecyclerView.ViewHolder(binding.root) {
 
     @SuppressLint("SetTextI18n")
-    fun bind(restaurant: Restaurant, onItemClicked: (Restaurant, ImageView) -> Unit) {
+    fun bind(restaurant: Restaurant, onItemClicked: (Restaurant) -> Unit) {
 
         binding.restaurantMatch.text = restaurant.match
         binding.restaurantName.text = "Name : ${restaurant.name}"
@@ -21,7 +20,7 @@ class RestaurantViewHolder(private val binding: ItemRestaurantBinding) :
 
 
         binding.root.setOnClickListener {
-            onItemClicked(restaurant, binding.imageView)
+            onItemClicked(restaurant)
         }
 
         if (restaurant.match.contains("NAME")) {

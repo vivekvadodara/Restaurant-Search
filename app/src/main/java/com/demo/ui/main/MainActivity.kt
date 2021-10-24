@@ -178,13 +178,7 @@ class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>() {
     override fun getViewBinding(): ActivityMainBinding = ActivityMainBinding.inflate(layoutInflater)
 
 
-    private fun onItemClicked(restaurant: Restaurant, imageView: ImageView) {
-        val options = ActivityOptionsCompat.makeSceneTransitionAnimation(
-            this,
-            imageView,
-            imageView.transitionName
-        )
-
+    private fun onItemClicked(restaurant: Restaurant) {
         mViewModel.getMenus(restaurant.id)
     }
 }

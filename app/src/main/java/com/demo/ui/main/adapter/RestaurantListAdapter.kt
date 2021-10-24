@@ -2,7 +2,6 @@ package com.demo.ui.main.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import com.demo.model.Restaurant
@@ -10,7 +9,7 @@ import com.demo.ui.main.viewholder.RestaurantViewHolder
 import com.demo.databinding.ItemRestaurantBinding
 
 class RestaurantListAdapter(
-    private val onItemClicked: (Restaurant, ImageView) -> Unit
+    private val onItemClicked: (Restaurant) -> Unit
 ) : ListAdapter<Restaurant, RestaurantViewHolder>(DIFF_CALLBACK) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = RestaurantViewHolder(
